@@ -1,0 +1,259 @@
+basePath: /
+definitions:
+  responses.TokenResponse:
+    properties:
+      authToken:
+        type: string
+      clientId:
+        type: string
+      digitString:
+        type: string
+      expiryTime:
+        type: integer
+      message:
+        type: string
+      scanRef:
+        type: string
+      sessionLength:
+        type: integer
+      tokenType:
+        type: string
+    type: object
+  responses.VerificationDataResponse:
+    properties:
+      additionalData: {}
+      address:
+        type: string
+      addressVerification: {}
+      ageEstimate:
+        type: string
+      authority:
+        type: string
+      birthPlace:
+        type: string
+      clientId:
+        type: string
+      clientIpProxyRiskLevel:
+        type: string
+      docBirthName:
+        type: string
+      docDateOfIssue:
+        type: string
+      docDob:
+        type: string
+      docExpiry:
+        type: string
+      docFirstName:
+        type: string
+      docIssuingCountry:
+        type: string
+      docLastName:
+        type: string
+      docNationality:
+        type: string
+      docNumber:
+        type: string
+      docPersonalCode:
+        type: string
+      docSex:
+        type: string
+      docTemporaryAddress:
+        type: string
+      docType:
+        type: string
+      driverLicenseCategory:
+        type: string
+      duplicateDocFaces:
+        items:
+          type: string
+        type: array
+      duplicateFaces:
+        items:
+          type: string
+        type: array
+      fullName:
+        type: string
+      manuallyDataChanged:
+        type: boolean
+      mothersMaidenName:
+        type: string
+      orgAddress:
+        type: string
+      orgAuthority:
+        type: string
+      orgBirthName:
+        type: string
+      orgBirthPlace:
+        type: string
+      orgFirstName:
+        type: string
+      orgLastName:
+        type: string
+      orgMothersMaidenName:
+        type: string
+      orgNationality:
+        type: string
+      orgTemporaryAddress:
+        type: string
+      scanRef:
+        type: string
+      selectedCountry:
+        type: string
+    type: object
+  responses.VerificationStatusResponse:
+    properties:
+      autoDocument:
+        type: string
+      autoFace:
+        type: string
+      clientId:
+        type: string
+      fraudTags:
+        items:
+          type: string
+        type: array
+      manualDocument:
+        type: string
+      manualFace:
+        type: string
+      mismatchTags:
+        items:
+          type: string
+        type: array
+      scanRef:
+        type: string
+      status:
+        type: string
+    type: object
+info:
+  contact:
+    email: info@codescalers.com
+    name: Codescalers Egypt
+    url: https://codescalers-egypt.com
+  description: This is a KYC service for TFGrid.
+  termsOfService: http://swagger.io/terms/
+  title: TFGrid KYC API
+  version: 0.1.0
+paths:
+  /api/v1/data:
+    get:
+      consumes:
+      - application/json
+      description: Returns the verification data for a client
+      parameters:
+      - description: TFChain SS58Address
+        in: header
+        maxLength: 48
+        minLength: 48
+        name: X-Client-ID
+        required: true
+        type: string
+      - description: hex-encoded message `{api-domain}:{timestamp}`
+        in: header
+        name: X-Challenge
+        required: true
+        type: string
+      - description: hex-encoded sr25519|ed25519 signature
+        in: header
+        maxLength: 128
+        minLength: 128
+        name: X-Signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VerificationDataResponse'
+      summary: Get Verification Data
+  /api/v1/status:
+    get:
+      consumes:
+      - application/json
+      description: Returns the verification status for a client
+      parameters:
+      - description: TFChain SS58Address
+        in: header
+        maxLength: 48
+        minLength: 48
+        name: X-Client-ID
+        required: true
+        type: string
+      - description: hex-encoded message `{api-domain}:{timestamp}`
+        in: header
+        name: X-Challenge
+        required: true
+        type: string
+      - description: hex-encoded sr25519|ed25519 signature
+        in: header
+        maxLength: 128
+        minLength: 128
+        name: X-Signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.VerificationStatusResponse'
+      summary: Get Verification Status
+  /api/v1/token:
+    post:
+      consumes:
+      - application/json
+      description: Returns a token for a client
+      parameters:
+      - description: TFChain SS58Address
+        in: header
+        maxLength: 48
+        minLength: 48
+        name: X-Client-ID
+        required: true
+        type: string
+      - description: hex-encoded message `{api-domain}:{timestamp}`
+        in: header
+        name: X-Challenge
+        required: true
+        type: string
+      - description: hex-encoded sr25519|ed25519 signature
+        in: header
+        maxLength: 128
+        minLength: 128
+        name: X-Signature
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.TokenResponse'
+      summary: Get or Create Token
+  /webhooks/idenfy/id-expiration:
+    post:
+      consumes:
+      - application/json
+      description: Processes the doc expiration notification for a client
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Process Doc Expiration Notification
+  /webhooks/idenfy/verification-update:
+    post:
+      consumes:
+      - application/json
+      description: Processes the verification update for a client
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Process Verification Update
+swagger: "2.0"
