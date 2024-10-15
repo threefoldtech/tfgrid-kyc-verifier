@@ -15,8 +15,9 @@ func NewHandler(tokenService services.TokenService, verificationService services
 	return &Handler{tokenService: tokenService, verificationService: verificationService}
 }
 
-// @Summary		Get or Create Token
+// @Summary		Get or Generate iDenfy Verification Token
 // @Description	Returns a token for a client
+// @Tags			Token
 // @Accept			json
 // @Produce		json
 // @Param			X-Client-ID	header		string	true	"TFChain SS58Address"								minlength(48)	maxlength(48)
@@ -44,6 +45,7 @@ func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 
 // @Summary		Get Verification Data
 // @Description	Returns the verification data for a client
+// @Tags			Verification
 // @Accept			json
 // @Produce		json
 // @Param			X-Client-ID	header		string	true	"TFChain SS58Address"								minlength(48)	maxlength(48)
@@ -67,6 +69,7 @@ func (h *Handler) GetVerificationData() fiber.Handler {
 
 // @Summary		Get Verification Status
 // @Description	Returns the verification status for a client
+// @Tags			Verification
 // @Accept			json
 // @Produce		json
 // @Param			X-Client-ID	header		string	true	"TFChain SS58Address"								minlength(48)	maxlength(48)
@@ -90,6 +93,7 @@ func (h *Handler) GetVerificationStatus() fiber.Handler {
 
 // @Summary		Process Verification Update
 // @Description	Processes the verification update for a client
+// @Tags			Webhooks
 // @Accept			json
 // @Produce		json
 // @Success		200
@@ -102,6 +106,7 @@ func (h *Handler) ProcessVerificationResult() fiber.Handler {
 
 // @Summary		Process Doc Expiration Notification
 // @Description	Processes the doc expiration notification for a client
+// @Tags			Webhooks
 // @Accept			json
 // @Produce		json
 // @Success		200

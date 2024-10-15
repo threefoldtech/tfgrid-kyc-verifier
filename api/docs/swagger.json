@@ -22,6 +22,9 @@
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Verification"
+                ],
                 "summary": "Get Verification Data",
                 "parameters": [
                     {
@@ -68,6 +71,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Verification"
                 ],
                 "summary": "Get Verification Status",
                 "parameters": [
@@ -116,7 +122,10 @@
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get or Create Token",
+                "tags": [
+                    "Token"
+                ],
+                "summary": "Get or Generate iDenfy Verification Token",
                 "parameters": [
                     {
                         "maxLength": 48,
@@ -163,6 +172,9 @@
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Webhooks"
+                ],
                 "summary": "Process Doc Expiration Notification",
                 "responses": {
                     "200": {
@@ -179,6 +191,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Webhooks"
                 ],
                 "summary": "Process Verification Update",
                 "responses": {

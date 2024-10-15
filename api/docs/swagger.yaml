@@ -168,6 +168,8 @@ paths:
           schema:
             $ref: '#/definitions/responses.VerificationDataResponse'
       summary: Get Verification Data
+      tags:
+      - Verification
   /api/v1/status:
     get:
       consumes:
@@ -201,6 +203,8 @@ paths:
           schema:
             $ref: '#/definitions/responses.VerificationStatusResponse'
       summary: Get Verification Status
+      tags:
+      - Verification
   /api/v1/token:
     post:
       consumes:
@@ -233,7 +237,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.TokenResponse'
-      summary: Get or Create Token
+      summary: Get or Generate iDenfy Verification Token
+      tags:
+      - Token
   /webhooks/idenfy/id-expiration:
     post:
       consumes:
@@ -245,6 +251,8 @@ paths:
         "200":
           description: OK
       summary: Process Doc Expiration Notification
+      tags:
+      - Webhooks
   /webhooks/idenfy/verification-update:
     post:
       consumes:
@@ -256,4 +264,6 @@ paths:
         "200":
           description: OK
       summary: Process Verification Update
+      tags:
+      - Webhooks
 swagger: "2.0"

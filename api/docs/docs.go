@@ -29,6 +29,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Verification"
+                ],
                 "summary": "Get Verification Data",
                 "parameters": [
                     {
@@ -75,6 +78,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Verification"
                 ],
                 "summary": "Get Verification Status",
                 "parameters": [
@@ -123,7 +129,10 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get or Create Token",
+                "tags": [
+                    "Token"
+                ],
+                "summary": "Get or Generate iDenfy Verification Token",
                 "parameters": [
                     {
                         "maxLength": 48,
@@ -170,6 +179,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Webhooks"
+                ],
                 "summary": "Process Doc Expiration Notification",
                 "responses": {
                     "200": {
@@ -186,6 +198,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Webhooks"
                 ],
                 "summary": "Process Verification Update",
                 "responses": {
