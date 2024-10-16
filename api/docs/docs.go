@@ -164,7 +164,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.TokenResponse"
+                            "$ref": "#/definitions/responses.TokenResponseWithStatus"
                         }
                     }
                 }
@@ -227,9 +227,6 @@ const docTemplate = `{
                 "expiryTime": {
                     "type": "integer"
                 },
-                "message": {
-                    "type": "string"
-                },
                 "scanRef": {
                     "type": "string"
                 },
@@ -238,6 +235,20 @@ const docTemplate = `{
                 },
                 "tokenType": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.TokenResponseWithStatus": {
+            "type": "object",
+            "properties": {
+                "is_new_token": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "token": {
+                    "$ref": "#/definitions/responses.TokenResponse"
                 }
             }
         },

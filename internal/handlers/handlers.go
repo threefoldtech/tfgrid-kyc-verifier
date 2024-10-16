@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 
 	"example.com/tfgrid-kyc-service/internal/services"
@@ -23,11 +25,12 @@ func NewHandler(tokenService services.TokenService, verificationService services
 // @Param			X-Client-ID	header		string	true	"TFChain SS58Address"								minlength(48)	maxlength(48)
 // @Param			X-Challenge	header		string	true	"hex-encoded message `{api-domain}:{timestamp}`"
 // @Param			X-Signature	header		string	true	"hex-encoded sr25519|ed25519 signature"				minlength(128)	maxlength(128)
-// @Success		200			{object}	responses.TokenResponse
+// @Success		200			{object}	responses.TokenResponseWithStatus
 // @Router			/api/v1/token [post]
 func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Get("X-Client-ID")
+		// check if user account balance satisfies the minimum required balance, return an error if not
 		hasRequiredBalance, err := h.tokenService.AccountHasRequiredBalance(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -35,11 +38,23 @@ func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 		if !hasRequiredBalance {
 			return c.Status(fiber.StatusPaymentRequired).JSON(fiber.Map{"error": "Account does not have the required balance"})
 		}
-		result, err := h.tokenService.GetToken(c.Context(), clientID)
+		// check if user is unverified, return an error if not
+		// this should be client responsibility to check if they are verified before requesting a new verification
+		isVerified, err := h.verificationService.IsUserVerified(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.JSON(fiber.Map{"result": result})
+		if isVerified {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "User already verified"})
+		}
+
+		fmt.Println("creating new token")
+		token, err := h.tokenService.GetorCreateVerificationToken(c.Context(), clientID)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		fmt.Println("token from handler", token)
+		return c.JSON(fiber.Map{"result": token})
 	}
 }
 

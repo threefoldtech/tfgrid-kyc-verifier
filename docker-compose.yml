@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tfgrid_kyc_api
+    container_name: tf_kyc_api
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -18,7 +18,7 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb_dev
+    container_name: tf_kyc_db
     ports:
       - "27017:27017"
     volumes:
@@ -31,6 +31,19 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo_express
+    environment:
+        - ME_CONFIG_MONGODB_SERVER=mongodb
+        - ME_CONFIG_MONGODB_PORT=27017
+    depends_on:
+        - mongodb
+    ports:
+      - "8888:8081"
+    env_file:
+      - .express.env
 
 volumes:
   mongodb_data:

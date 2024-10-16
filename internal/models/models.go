@@ -40,6 +40,7 @@ type Token struct {
 	AdditionalSteps  interface{}         `bson:"additionalSteps"`
 	AdditionalData   interface{}         `bson:"additionalData"`
 	CreatedAt        time.Time           `bson:"createdAt"`
+	ExpiresAt        time.Time           `bson:"expiresAt"`
 }
 
 type Verification struct {

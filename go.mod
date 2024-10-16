@@ -4,6 +4,7 @@ go 1.22.1
 
 require (
 	github.com/centrifuge/go-substrate-rpc-client/v4 v4.2.1
+	github.com/gboddin/go-idenfy v1.0.1
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/swagger v1.1.0
 	github.com/spf13/viper v1.19.0

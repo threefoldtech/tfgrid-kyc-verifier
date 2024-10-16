@@ -7,8 +7,7 @@ import (
 )
 
 type TokenService interface {
-	CreateToken(ctx context.Context, clientID string) (*responses.TokenResponse, error)
-	GetToken(ctx context.Context, clientID string) (*responses.TokenResponse, error)
+	GetorCreateVerificationToken(ctx context.Context, clientID string) (*responses.TokenResponseWithStatus, error)
 	DeleteToken(ctx context.Context, clientID string) error
 	AccountHasRequiredBalance(ctx context.Context, address string) (bool, error)
 }
@@ -16,4 +15,7 @@ type TokenService interface {
 type VerificationService interface {
 	GetVerificationData(ctx context.Context, clientID string) (*responses.VerificationDataResponse, error)
 	GetVerificationStatus(ctx context.Context, clientID string) (*responses.VerificationStatusResponse, error)
+	ProcessVerificationResult(ctx context.Context, clientID string) error
+	ProcessDocExpirationNotification(ctx context.Context, clientID string) error
+	IsUserVerified(ctx context.Context, clientID string) (bool, error)
 }

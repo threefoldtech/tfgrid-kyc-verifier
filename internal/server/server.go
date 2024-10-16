@@ -28,7 +28,7 @@ type Server struct {
 }
 
 func New(config *configs.Config) *Server {
-
+	// debug log
 	app := fiber.New()
 
 	// Global middlewares
@@ -50,12 +50,17 @@ func New(config *configs.Config) *Server {
 
 	// Initialize services
 	idenfyClient := idenfy.New(config.Idenfy)
+
+	if err != nil {
+		log.Fatalf("Failed to initialize idenfy client: %v", err)
+	}
+
 	substrateClient, err := substrate.New(config.TFChain)
 	if err != nil {
 		log.Fatalf("Failed to initialize substrate client: %v", err)
 	}
 	tokenService := services.NewTokenService(tokenRepo, idenfyClient, substrateClient, config.MinBalanceToVerifyAccount)
-	verificationService := services.NewVerificationService(verificationRepo)
+	verificationService := services.NewVerificationService(verificationRepo, idenfyClient, &config.Verification)
 
 	// Initialize handler
 	handler := handlers.NewHandler(tokenService, verificationService)
