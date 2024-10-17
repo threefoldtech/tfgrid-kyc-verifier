@@ -19,13 +19,8 @@ func SuccessResponse(c *fiber.Ctx, statusCode int, data interface{}, message str
 	})
 }
 
-type TokenResponseWithStatus struct {
-	Token      *TokenResponse `json:"token"`
-	IsNewToken bool           `json:"is_new_token"`
-	Message    string         `json:"message"`
-}
-
 type TokenResponse struct {
+	Message       string `json:"message"`
 	AuthToken     string `json:"authToken"`
 	ScanRef       string `json:"scanRef"`
 	ClientID      string `json:"clientId"`
@@ -89,23 +84,20 @@ type VerificationDataResponse struct {
 }
 
 // implement from() method for TokenResponseWithStatus
-func NewTokenResponseWithStatus(token *models.Token, isNewToken bool) *TokenResponseWithStatus {
+func NewTokenResponseWithStatus(token *models.Token, isNewToken bool) *TokenResponse {
 	message := "Existing valid token retrieved."
 	if isNewToken {
 		message = "New token created."
 	}
-	return &TokenResponseWithStatus{
-		Token: &TokenResponse{
-			AuthToken:     token.AuthToken,
-			ScanRef:       token.ScanRef,
-			ClientID:      token.ClientID,
-			ExpiryTime:    token.ExpiryTime,
-			SessionLength: token.SessionLength,
-			DigitString:   token.DigitString,
-			TokenType:     token.TokenType,
-		},
-		IsNewToken: isNewToken,
-		Message:    message,
+	return &TokenResponse{
+		AuthToken:     token.AuthToken,
+		ScanRef:       token.ScanRef,
+		ClientID:      token.ClientID,
+		ExpiryTime:    token.ExpiryTime,
+		SessionLength: token.SessionLength,
+		DigitString:   token.DigitString,
+		TokenType:     token.TokenType,
+		Message:       message,
 	}
 }
 

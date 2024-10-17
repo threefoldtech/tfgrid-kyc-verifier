@@ -10,21 +10,14 @@ definitions:
         type: string
       expiryTime:
         type: integer
+      message:
+        type: string
       scanRef:
         type: string
       sessionLength:
         type: integer
       tokenType:
         type: string
-    type: object
-  responses.TokenResponseWithStatus:
-    properties:
-      is_new_token:
-        type: boolean
-      message:
-        type: string
-      token:
-        $ref: '#/definitions/responses.TokenResponse'
     type: object
   responses.VerificationDataResponse:
     properties:
@@ -241,9 +234,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Existing token retrieved
           schema:
-            $ref: '#/definitions/responses.TokenResponseWithStatus'
+            $ref: '#/definitions/responses.TokenResponse'
+        "201":
+          description: New token created
+          schema:
+            $ref: '#/definitions/responses.TokenResponse'
       summary: Get or Generate iDenfy Verification Token
       tags:
       - Token

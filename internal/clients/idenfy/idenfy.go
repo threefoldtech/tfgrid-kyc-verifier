@@ -33,7 +33,7 @@ func New(config configs.IdenfyConfig) *Idenfy {
 	}
 }
 
-func (c *Idenfy) CreateVerificationSession(ctx context.Context, clientID string) (models.Token, error) {
+func (c *Idenfy) CreateVerificationSession(ctx context.Context, clientID string) (models.Token, error) { // TODO: Refactor
 	url := c.baseURL + VerificationSessionEndpoint
 
 	req := fasthttp.AcquireRequest()

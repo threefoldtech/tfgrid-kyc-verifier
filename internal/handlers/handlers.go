@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 
 	"example.com/tfgrid-kyc-service/internal/responses"
@@ -27,7 +25,8 @@ func NewHandler(tokenService services.TokenService, verificationService services
 // @Param			X-Client-ID	header		string	true	"TFChain SS58Address"								minlength(48)	maxlength(48)
 // @Param			X-Challenge	header		string	true	"hex-encoded message `{api-domain}:{timestamp}`"
 // @Param			X-Signature	header		string	true	"hex-encoded sr25519|ed25519 signature"				minlength(128)	maxlength(128)
-// @Success		200			{object}	responses.TokenResponseWithStatus
+// @Success		200			{object}	responses.TokenResponse "Existing token retrieved"
+// @Success		201			{object}	responses.TokenResponse "New token created"
 // @Router			/api/v1/token [post]
 func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -38,9 +37,10 @@ func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
 		response := responses.NewTokenResponseWithStatus(token, isNewToken)
-
-		fmt.Println("token from handler", token)
-		return c.JSON(fiber.Map{"result": response})
+		if isNewToken {
+			return c.Status(fiber.StatusCreated).JSON(fiber.Map{"result": response})
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"result": response})
 	}
 }
 
