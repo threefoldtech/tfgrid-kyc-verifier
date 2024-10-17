@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	_ "example.com/tfgrid-kyc-service/api/docs"
 	"example.com/tfgrid-kyc-service/internal/clients/idenfy"
@@ -18,6 +19,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/storage/mongodb"
 	"github.com/gofiber/swagger"
 )
 
@@ -30,6 +32,43 @@ type Server struct {
 func New(config *configs.Config) *Server {
 	// debug log
 	app := fiber.New()
+
+	// Setup Limter Config and store
+	ipLimiterstore := mongodb.New(mongodb.Config{
+		ConnectionURI: config.MongoURI,
+		Database:      config.DatabaseName,
+		Collection:    "ip_limit",
+		Reset:         false,
+	})
+	ipLimiterConfig := limiter.Config{ // TODO: use configurable parameters
+		Max:                    3,
+		Expiration:             24 * time.Hour,
+		SkipFailedRequests:     false,
+		SkipSuccessfulRequests: false,
+		Store:                  ipLimiterstore,
+		// skip the limiter for localhost
+		Next: func(c *fiber.Ctx) bool {
+			return c.IP() == "127.0.0.1"
+		},
+	}
+	clientLimiterStore := mongodb.New(mongodb.Config{
+		ConnectionURI: config.MongoURI,
+		Database:      config.DatabaseName,
+		Collection:    "client_limit",
+		Reset:         false,
+	})
+
+	clientLimiterConfig := limiter.Config{ // TODO: use configurable parameters
+		Max:                    10,
+		Expiration:             24 * time.Hour,
+		SkipFailedRequests:     false,
+		SkipSuccessfulRequests: false,
+		Store:                  clientLimiterStore,
+		// Use client id as key to limit the number of requests per client
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return c.Get("X-Client-ID")
+		},
+	}
 
 	// Global middlewares
 	app.Use(middleware.Logger())
@@ -68,13 +107,13 @@ func New(config *configs.Config) *Server {
 	// Routes
 	app.Get("/docs/*", swagger.HandlerDefault)
 
-	v1 := app.Group("/api/v1", limiter.New(), middleware.AuthMiddleware(config.ChallengeWindow))
-	v1.Post("/token", handler.GetorCreateVerificationToken())
+	v1 := app.Group("/api/v1", limiter.New(ipLimiterConfig), middleware.AuthMiddleware(config.ChallengeWindow))
+	v1.Post("/token", limiter.New(clientLimiterConfig), handler.GetorCreateVerificationToken())
 	v1.Get("/data", handler.GetVerificationData())
 	v1.Get("/status", handler.GetVerificationStatus())
 
 	// Webhook routes
-	webhooks := app.Group("/webhooks/idenfy") // TODO: middleware to verify hmac signature of the webhook, only accept from whitelisted ip addresses
+	webhooks := app.Group("/webhooks/idenfy")
 	webhooks.Post("/verification-update", handler.ProcessVerificationResult())
 	webhooks.Post("/id-expiration", handler.ProcessDocExpirationNotification())
 

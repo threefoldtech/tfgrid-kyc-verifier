@@ -77,6 +77,9 @@ func (s *tokenService) DeleteToken(ctx context.Context, clientID string) error {
 }
 
 func (s *tokenService) AccountHasRequiredBalance(ctx context.Context, address string) (bool, error) {
+	if s.requiredBalance == 0 {
+		return true, nil
+	}
 	balance, err := s.substrate.GetAccountBalance(address)
 	if err != nil {
 		return false, err

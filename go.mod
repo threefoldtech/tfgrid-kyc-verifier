@@ -4,11 +4,12 @@ go 1.22.1
 
 require (
 	github.com/centrifuge/go-substrate-rpc-client/v4 v4.2.1
-	github.com/gboddin/go-idenfy v1.0.1
 	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/gofiber/storage/mongodb v1.3.9
 	github.com/gofiber/swagger v1.1.0
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.3
+	github.com/valyala/fasthttp v1.51.0
 	github.com/vedhavyas/go-subkey/v2 v2.0.0
 	go.mongodb.org/mongo-driver v1.17.1
 )
@@ -61,7 +62,6 @@ require (
 	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
