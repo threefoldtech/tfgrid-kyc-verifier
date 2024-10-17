@@ -5,16 +5,18 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"example.com/tfgrid-kyc-service/internal/responses"
 	"example.com/tfgrid-kyc-service/internal/services"
 )
 
 type Handler struct {
 	tokenService        services.TokenService
 	verificationService services.VerificationService
+	coordinatorService  services.CoordinatorService
 }
 
-func NewHandler(tokenService services.TokenService, verificationService services.VerificationService) *Handler {
-	return &Handler{tokenService: tokenService, verificationService: verificationService}
+func NewHandler(tokenService services.TokenService, verificationService services.VerificationService, coordinatorService services.CoordinatorService) *Handler {
+	return &Handler{tokenService: tokenService, verificationService: verificationService, coordinatorService: coordinatorService}
 }
 
 // @Summary		Get or Generate iDenfy Verification Token
@@ -30,31 +32,15 @@ func NewHandler(tokenService services.TokenService, verificationService services
 func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Get("X-Client-ID")
-		// check if user account balance satisfies the minimum required balance, return an error if not
-		hasRequiredBalance, err := h.tokenService.AccountHasRequiredBalance(c.Context(), clientID)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-		}
-		if !hasRequiredBalance {
-			return c.Status(fiber.StatusPaymentRequired).JSON(fiber.Map{"error": "Account does not have the required balance"})
-		}
-		// check if user is unverified, return an error if not
-		// this should be client responsibility to check if they are verified before requesting a new verification
-		isVerified, err := h.verificationService.IsUserVerified(c.Context(), clientID)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-		}
-		if isVerified {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "User already verified"})
-		}
 
-		fmt.Println("creating new token")
-		token, err := h.tokenService.GetorCreateVerificationToken(c.Context(), clientID)
+		token, isNewToken, err := h.tokenService.GetorCreateVerificationToken(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
+		response := responses.NewTokenResponseWithStatus(token, isNewToken)
+
 		fmt.Println("token from handler", token)
-		return c.JSON(fiber.Map{"result": token})
+		return c.JSON(fiber.Map{"result": response})
 	}
 }
 
@@ -71,14 +57,15 @@ func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 func (h *Handler) GetVerificationData() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Query("clientID")
-		result, err := h.verificationService.GetVerificationData(c.Context(), clientID)
+		verification, err := h.verificationService.GetVerification(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		if result == nil {
+		if verification == nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Verification not found"})
 		}
-		return c.JSON(fiber.Map{"result": result})
+		response := responses.NewVerificationDataResponse(verification)
+		return c.JSON(fiber.Map{"result": response})
 	}
 }
 
@@ -95,14 +82,15 @@ func (h *Handler) GetVerificationData() fiber.Handler {
 func (h *Handler) GetVerificationStatus() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Query("clientID")
-		result, err := h.verificationService.GetVerificationStatus(c.Context(), clientID)
+		verification, err := h.verificationService.GetVerification(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		if result == nil {
+		if verification == nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Verification not found"})
 		}
-		return c.JSON(fiber.Map{"result": result})
+		response := responses.NewVerificationStatusResponse(verification)
+		return c.JSON(fiber.Map{"result": response})
 	}
 }
 

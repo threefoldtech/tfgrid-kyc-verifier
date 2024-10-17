@@ -1,6 +1,9 @@
 package responses
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"example.com/tfgrid-kyc-service/internal/models"
+	"github.com/gofiber/fiber/v2"
+)
 
 type Response struct {
 	Success bool        `json:"success"`
@@ -83,4 +86,81 @@ type VerificationDataResponse struct {
 	AdditionalData         interface{} `json:"additionalData"`
 	ScanRef                string      `json:"scanRef"`
 	ClientID               string      `json:"clientId"`
+}
+
+// implement from() method for TokenResponseWithStatus
+func NewTokenResponseWithStatus(token *models.Token, isNewToken bool) *TokenResponseWithStatus {
+	message := "Existing valid token retrieved."
+	if isNewToken {
+		message = "New token created."
+	}
+	return &TokenResponseWithStatus{
+		Token: &TokenResponse{
+			AuthToken:     token.AuthToken,
+			ScanRef:       token.ScanRef,
+			ClientID:      token.ClientID,
+			ExpiryTime:    token.ExpiryTime,
+			SessionLength: token.SessionLength,
+			DigitString:   token.DigitString,
+			TokenType:     token.TokenType,
+		},
+		IsNewToken: isNewToken,
+		Message:    message,
+	}
+}
+
+func NewVerificationStatusResponse(verification *models.Verification) *VerificationStatusResponse {
+	return &VerificationStatusResponse{
+		FraudTags:      verification.Status.FraudTags,
+		MismatchTags:   verification.Status.MismatchTags,
+		AutoDocument:   verification.Status.AutoDocument,
+		ManualDocument: verification.Status.ManualDocument,
+		AutoFace:       verification.Status.AutoFace,
+		ManualFace:     verification.Status.ManualFace,
+		ScanRef:        verification.ScanRef,
+		ClientID:       verification.ClientID,
+		Status:         string(verification.Status.Overall),
+	}
+}
+
+func NewVerificationDataResponse(verification *models.Verification) *VerificationDataResponse {
+	return &VerificationDataResponse{
+		DocFirstName:           verification.Data.DocFirstName,
+		DocLastName:            verification.Data.DocLastName,
+		DocNumber:              verification.Data.DocNumber,
+		DocPersonalCode:        verification.Data.DocPersonalCode,
+		DocExpiry:              verification.Data.DocExpiry,
+		DocDob:                 verification.Data.DocDOB,
+		DocDateOfIssue:         verification.Data.DocDateOfIssue,
+		DocType:                string(verification.Data.DocType),
+		DocSex:                 string(verification.Data.DocSex),
+		DocNationality:         verification.Data.DocNationality,
+		DocIssuingCountry:      verification.Data.DocIssuingCountry,
+		DocTemporaryAddress:    verification.Data.DocTemporaryAddress,
+		DocBirthName:           verification.Data.DocBirthName,
+		BirthPlace:             verification.Data.BirthPlace,
+		Authority:              verification.Data.Authority,
+		MotherMaidenName:       verification.Data.MothersMaidenName,
+		DriverLicenseCategory:  verification.Data.DriverLicenseCategory,
+		ManuallyDataChanged:    verification.Data.ManuallyDataChanged,
+		FullName:               verification.Data.FullName,
+		OrgFirstName:           verification.Data.OrgFirstName,
+		OrgLastName:            verification.Data.OrgLastName,
+		OrgNationality:         verification.Data.OrgNationality,
+		OrgBirthPlace:          verification.Data.OrgBirthPlace,
+		OrgAuthority:           verification.Data.OrgAuthority,
+		OrgAddress:             verification.Data.OrgAddress,
+		OrgTemporaryAddress:    verification.Data.OrgTemporaryAddress,
+		OrgMothersMaidenName:   verification.Data.OrgMothersMaidenName,
+		OrgBirthName:           verification.Data.OrgBirthName,
+		SelectedCountry:        verification.Data.SelectedCountry,
+		AgeEstimate:            string(verification.Data.AgeEstimate),
+		ClientIpProxyRiskLevel: verification.Data.ClientIPProxyRiskLevel,
+		DuplicateFaces:         verification.Data.DuplicateFaces,
+		DuplicateDocFaces:      verification.Data.DuplicateDocFaces,
+		AddressVerification:    verification.AddressVerification,
+		AdditionalData:         verification.Data.AdditionalData,
+		ScanRef:                verification.ScanRef,
+		ClientID:               verification.ClientID,
+	}
 }

@@ -2,12 +2,13 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"example.com/tfgrid-kyc-service/internal/clients/idenfy"
 	"example.com/tfgrid-kyc-service/internal/clients/substrate"
+	"example.com/tfgrid-kyc-service/internal/models"
 	"example.com/tfgrid-kyc-service/internal/repository"
-	"example.com/tfgrid-kyc-service/internal/responses"
 )
 
 type tokenService struct {
@@ -21,55 +22,35 @@ func NewTokenService(repo repository.TokenRepository, idenfy *idenfy.Idenfy, sub
 	return &tokenService{repo: repo, idenfy: idenfy, substrate: substrateClient, requiredBalance: requiredBalance}
 }
 
-func (s *tokenService) GetorCreateVerificationToken(ctx context.Context, clientID string) (*responses.TokenResponseWithStatus, error) {
+func (s *tokenService) GetorCreateVerificationToken(ctx context.Context, clientID string) (*models.Token, bool, error) {
 	token, err := s.repo.GetToken(ctx, clientID)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	// check if token is not nil and not expired or near expiry (2 min)
 	if token != nil { //&& time.Since(token.CreatedAt)+2*time.Minute < time.Duration(token.ExpiryTime)*time.Second {
-		tokenResponse := &responses.TokenResponse{
-			AuthToken:     token.AuthToken,
-			ClientID:      token.ClientID,
-			ScanRef:       token.ScanRef,
-			ExpiryTime:    token.ExpiryTime,
-			SessionLength: token.SessionLength,
-			DigitString:   token.DigitString,
-			TokenType:     token.TokenType,
-		}
-		tokenResponseWithStatus := &responses.TokenResponseWithStatus{
-			Token:      tokenResponse,
-			IsNewToken: false,
-			Message:    "Existing valid token retrieved.",
-		}
-		fmt.Println("token from db", token)
-		return tokenResponseWithStatus, nil
+		return token, false, nil
 	}
 	fmt.Println("token is nil or expired")
+	// check if user account balance satisfies the minimum required balance, return an error if not
+	hasRequiredBalance, err := s.AccountHasRequiredBalance(ctx, clientID)
+	if err != nil {
+		return nil, false, err // todo: implement a custom error that can be converted in the handler to a 500 status code
+	}
+	if !hasRequiredBalance {
+		return nil, false, errors.New("account does not have the required balance") // todo: implement a custom error that can be converted in the handler to a 402 status code
+	}
 	newToken, err := s.idenfy.CreateVerificationSession(ctx, clientID)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	fmt.Println("new token", newToken)
 	err = s.repo.SaveToken(ctx, &newToken)
 	if err != nil {
 		fmt.Println("warning: was not able to save verification token to db", err)
 	}
-	tokenResponse := &responses.TokenResponse{
-		AuthToken:     newToken.AuthToken,
-		ClientID:      newToken.ClientID,
-		ScanRef:       newToken.ScanRef,
-		ExpiryTime:    newToken.ExpiryTime,
-		SessionLength: newToken.SessionLength,
-		DigitString:   newToken.DigitString,
-		TokenType:     newToken.TokenType,
-	}
-	tokenResponseWithStatus := &responses.TokenResponseWithStatus{
-		Token:      tokenResponse,
-		IsNewToken: true,
-		Message:    "New token created",
-	}
-	return tokenResponseWithStatus, nil
+
+	return &newToken, true, nil
 }
 
 func (s *tokenService) DeleteToken(ctx context.Context, clientID string) error {

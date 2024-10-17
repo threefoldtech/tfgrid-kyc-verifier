@@ -5,8 +5,8 @@ import (
 
 	"example.com/tfgrid-kyc-service/internal/clients/idenfy"
 	"example.com/tfgrid-kyc-service/internal/configs"
+	"example.com/tfgrid-kyc-service/internal/models"
 	"example.com/tfgrid-kyc-service/internal/repository"
-	"example.com/tfgrid-kyc-service/internal/responses"
 )
 
 type verificationService struct {
@@ -19,33 +19,12 @@ func NewVerificationService(repo repository.VerificationRepository, idenfyClient
 	return &verificationService{repo: repo, idenfy: idenfyClient, config: config}
 }
 
-func (s *verificationService) GetVerificationData(ctx context.Context, clientID string) (*responses.VerificationDataResponse, error) {
-	// build responses.VerificationDataResponse from models.Verification
-	verificationData := &responses.VerificationDataResponse{}
-	return verificationData, nil
-}
-
-func (s *verificationService) GetVerificationStatus(ctx context.Context, clientID string) (*responses.VerificationStatusResponse, error) {
+func (s *verificationService) GetVerification(ctx context.Context, clientID string) (*models.Verification, error) {
 	verification, err := s.repo.GetVerification(ctx, clientID)
 	if err != nil {
 		return nil, err
 	}
-	if verification == nil {
-		return nil, nil
-	}
-	verificationStatus := &responses.VerificationStatusResponse{
-		FraudTags:      verification.Status.FraudTags,
-		MismatchTags:   verification.Status.MismatchTags,
-		AutoDocument:   verification.Status.AutoDocument,
-		ManualDocument: verification.Status.ManualDocument,
-		AutoFace:       verification.Status.AutoFace,
-		ManualFace:     verification.Status.ManualFace,
-		ScanRef:        verification.ScanRef,
-		ClientID:       verification.ClientID,
-		Status:         string(verification.Status.Overall),
-	}
-
-	return verificationStatus, nil
+	return verification, nil
 }
 
 func (s *verificationService) ProcessVerificationResult(ctx context.Context, clientID string) error {
@@ -57,7 +36,7 @@ func (s *verificationService) ProcessDocExpirationNotification(ctx context.Conte
 }
 
 func (s *verificationService) IsUserVerified(ctx context.Context, clientID string) (bool, error) {
-	verification, err := s.repo.GetVerification(ctx, clientID)
+	verification, err := s.GetVerification(ctx, clientID)
 	if err != nil {
 		return false, err
 	}

@@ -100,9 +100,10 @@ func New(config *configs.Config) *Server {
 	}
 	tokenService := services.NewTokenService(tokenRepo, idenfyClient, substrateClient, config.MinBalanceToVerifyAccount)
 	verificationService := services.NewVerificationService(verificationRepo, idenfyClient, &config.Verification)
+	coordinatorService := services.NewCoordinatorService(tokenService, verificationService)
 
 	// Initialize handler
-	handler := handlers.NewHandler(tokenService, verificationService)
+	handler := handlers.NewHandler(tokenService, verificationService, coordinatorService)
 
 	// Routes
 	app.Get("/docs/*", swagger.HandlerDefault)
