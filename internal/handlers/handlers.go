@@ -3,13 +3,9 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/valyala/fasthttp"
 
 	"example.com/tfgrid-kyc-service/internal/models"
 	"example.com/tfgrid-kyc-service/internal/responses"
@@ -148,62 +144,4 @@ func (h *Handler) ProcessDocExpirationNotification() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		return nil
 	}
-}
-
-func decodeJSONBody(r *fasthttp.Request, dst interface{}) error {
-	fmt.Println("start decoding json body")
-	// check if request type contains application/json
-	contentType := string(r.Header.ContentType())
-	if !strings.Contains(contentType, "application/json") {
-		return errors.New("Content-Type header is not application/json")
-	}
-
-	dec := json.NewDecoder(r.BodyStream())
-	dec.DisallowUnknownFields()
-	fmt.Println("decoding json body")
-	err := dec.Decode(&dst)
-	if err != nil {
-		var syntaxError *json.SyntaxError
-		var unmarshalTypeError *json.UnmarshalTypeError
-
-		switch {
-		case errors.As(err, &syntaxError):
-			fmt.Println("syntax error")
-			msg := fmt.Sprintf("request body contains badly-formed JSON (at position %d)", syntaxError.Offset)
-			return errors.New(msg)
-
-		case errors.Is(err, io.ErrUnexpectedEOF):
-			fmt.Println("unexpected EOF")
-			msg := "request body contains badly-formed JSON"
-			return errors.New(msg)
-
-		case errors.As(err, &unmarshalTypeError):
-			fmt.Println("unmarshal type error")
-			msg := fmt.Sprintf("request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)
-			return errors.New(msg)
-
-		case strings.HasPrefix(err.Error(), "json: unknown field "):
-			fmt.Println("unknown field error")
-			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
-			msg := fmt.Sprintf("request body contains unknown field %s", fieldName)
-			return errors.New(msg)
-
-		case errors.Is(err, io.EOF):
-			fmt.Println("EOF error")
-			msg := "request body must not be empty"
-			return errors.New(msg)
-
-		case err.Error() == "http: request body too large":
-			fmt.Println("request body too large")
-			msg := "request body must not be larger than 1MB"
-			return errors.New(msg)
-
-		default:
-			fmt.Println("default error")
-			return err
-		}
-	}
-
-	fmt.Println("end decoding json body")
-	return nil
 }
