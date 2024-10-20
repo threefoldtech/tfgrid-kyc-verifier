@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"example.com/tfgrid-kyc-service/internal/clients/idenfy"
 	"example.com/tfgrid-kyc-service/internal/configs"
@@ -27,7 +28,18 @@ func (s *verificationService) GetVerification(ctx context.Context, clientID stri
 	return verification, nil
 }
 
-func (s *verificationService) ProcessVerificationResult(ctx context.Context, clientID string) error {
+func (s *verificationService) ProcessVerificationResult(ctx context.Context, body []byte, sigHeader string, result models.Verification) error {
+	err := s.idenfy.VerifyCallbackSignature(ctx, body, sigHeader)
+	if err != nil {
+		return err
+	}
+	err = s.repo.SaveVerification(ctx, &result)
+	if err != nil {
+		fmt.Printf("error saving verification to the database: %v", err)
+		return err
+	}
+	// fmt the result
+	fmt.Println(result)
 	return nil
 }
 

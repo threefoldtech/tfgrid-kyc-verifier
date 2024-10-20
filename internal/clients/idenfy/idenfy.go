@@ -2,8 +2,12 @@ package idenfy
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"example.com/tfgrid-kyc-service/internal/configs"
@@ -82,8 +86,24 @@ func (c *Idenfy) CreateVerificationSession(ctx context.Context, clientID string)
 	return result, nil
 }
 
-func (c *Idenfy) ProcessVerificationResult(ctx context.Context, sessionID string) (interface{}, error) {
-	var data interface{}
+// verify signature of the callback
+func (c *Idenfy) VerifyCallbackSignature(ctx context.Context, body []byte, sigHeader string) error {
+	fmt.Println("start verifying callback signature")
+	if len(c.callbackSignKey) < 1 {
+		return errors.New("callback was received but no signature key was provided")
+	}
+	sig, err := hex.DecodeString(sigHeader)
+	if err != nil {
+		return err
+	}
+	mac := hmac.New(sha256.New, c.callbackSignKey)
 
-	return data, nil
+	mac.Write(body)
+
+	if !hmac.Equal(sig, mac.Sum(nil)) {
+		return errors.New("signature verification failed")
+	}
+	fmt.Println("signature verified")
+
+	return nil
 }

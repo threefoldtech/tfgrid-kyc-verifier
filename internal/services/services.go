@@ -14,7 +14,7 @@ type TokenService interface {
 
 type VerificationService interface {
 	GetVerification(ctx context.Context, clientID string) (*models.Verification, error)
-	ProcessVerificationResult(ctx context.Context, clientID string) error
+	ProcessVerificationResult(ctx context.Context, body []byte, sigHeader string, result models.Verification) error
 	ProcessDocExpirationNotification(ctx context.Context, clientID string) error
 	IsUserVerified(ctx context.Context, clientID string) (bool, error)
 }

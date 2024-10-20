@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"example.com/tfgrid-kyc-service/internal/models"
@@ -20,14 +21,17 @@ func NewMongoVerificationRepository(db *mongo.Database) VerificationRepository {
 }
 
 func (r *MongoVerificationRepository) SaveVerification(ctx context.Context, verification *models.Verification) error {
+	fmt.Println("start saving verification to the database")
 	verification.CreatedAt = time.Now()
 	_, err := r.collection.InsertOne(ctx, verification)
+	fmt.Println(err)
+	fmt.Println("end saving verification to the database")
 	return err
 }
 
 func (r *MongoVerificationRepository) GetVerification(ctx context.Context, clientID string) (*models.Verification, error) {
 	var verification models.Verification
-	err := r.collection.FindOne(ctx, bson.M{"clientID": clientID}).Decode(&verification)
+	err := r.collection.FindOne(ctx, bson.M{"clientId": clientID}).Decode(&verification)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -38,6 +42,6 @@ func (r *MongoVerificationRepository) GetVerification(ctx context.Context, clien
 }
 
 func (r *MongoVerificationRepository) DeleteVerification(ctx context.Context, clientID string) error {
-	_, err := r.collection.DeleteOne(ctx, bson.M{"clientID": clientID})
+	_, err := r.collection.DeleteOne(ctx, bson.M{"clientId": clientID})
 	return err
 }

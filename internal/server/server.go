@@ -34,14 +34,14 @@ func New(config *configs.Config) *Server {
 	app := fiber.New()
 
 	// Setup Limter Config and store
-	ipLimiterstore := mongodb.New(mongodb.Config{
+	/* ipLimiterstore := mongodb.New(mongodb.Config{
 		ConnectionURI: config.MongoURI,
 		Database:      config.DatabaseName,
 		Collection:    "ip_limit",
 		Reset:         false,
-	})
-	ipLimiterConfig := limiter.Config{ // TODO: use configurable parameters
-		Max:                    3,
+	}) */
+	/* ipLimiterConfig := limiter.Config{ // TODO: use configurable parameters, also check if it works well after passing the request through an SSL gateway
+		Max:                    5,
 		Expiration:             24 * time.Hour,
 		SkipFailedRequests:     false,
 		SkipSuccessfulRequests: false,
@@ -50,7 +50,7 @@ func New(config *configs.Config) *Server {
 		Next: func(c *fiber.Ctx) bool {
 			return c.IP() == "127.0.0.1"
 		},
-	}
+	} */
 	clientLimiterStore := mongodb.New(mongodb.Config{
 		ConnectionURI: config.MongoURI,
 		Database:      config.DatabaseName,
@@ -108,7 +108,7 @@ func New(config *configs.Config) *Server {
 	// Routes
 	app.Get("/docs/*", swagger.HandlerDefault)
 
-	v1 := app.Group("/api/v1", limiter.New(ipLimiterConfig), middleware.AuthMiddleware(config.ChallengeWindow))
+	v1 := app.Group("/api/v1", middleware.AuthMiddleware(config.ChallengeWindow)) // TODO: add limiter.New(ipLimiterConfig)
 	v1.Post("/token", limiter.New(clientLimiterConfig), handler.GetorCreateVerificationToken())
 	v1.Get("/data", handler.GetVerificationData())
 	v1.Get("/status", handler.GetVerificationStatus())

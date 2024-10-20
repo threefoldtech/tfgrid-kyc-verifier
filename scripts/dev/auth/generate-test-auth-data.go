@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/vedhavyas/go-subkey/v2"
 	"github.com/vedhavyas/go-subkey/v2/ed25519"
 	"github.com/vedhavyas/go-subkey/v2/sr25519"
 )
@@ -16,11 +18,8 @@ const (
 // Generate test auth data for development use
 func main() {
 	message := createSignMessage()
-	krSr25519, err := sr25519.Scheme{}.Generate()
-	if err != nil {
-		panic(err)
-	}
-	krEd25519, err := ed25519.Scheme{}.Generate()
+	// if no arg provided, generate random keys
+	krSr25519, krEd25519, err := loadKeys()
 	if err != nil {
 		panic(err)
 	}
@@ -61,4 +60,28 @@ func createSignMessage() string {
 	message := fmt.Sprintf("%s:%d", domain, time.Now().Unix())
 	fmt.Println("message: ", message)
 	return message
+}
+
+func loadKeys() (subkey.KeyPair, subkey.KeyPair, error) {
+	if len(os.Args) < 2 {
+		krSr25519, err := sr25519.Scheme{}.Generate()
+		if err != nil {
+			return nil, nil, err
+		}
+		krEd25519, err := ed25519.Scheme{}.Generate()
+		if err != nil {
+			return nil, nil, err
+		}
+		return krSr25519, krEd25519, nil
+	} else {
+		krSr25519, err := sr25519.Scheme{}.FromPhrase(os.Args[1], "")
+		if err != nil {
+			return nil, nil, err
+		}
+		krEd25519, err := ed25519.Scheme{}.FromPhrase(os.Args[1], "")
+		if err != nil {
+			return nil, nil, err
+		}
+		return krSr25519, krEd25519, nil
+	}
 }
