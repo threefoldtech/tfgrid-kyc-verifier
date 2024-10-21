@@ -211,6 +211,17 @@
         }
     },
     "definitions": {
+        "responses.Outcome": {
+            "type": "string",
+            "enum": [
+                "VERIFIED",
+                "REJECTED"
+            ],
+            "x-enum-varnames": [
+                "OutcomeVerified",
+                "OutcomeRejected"
+            ]
+        },
         "responses.TokenResponse": {
             "type": "object",
             "properties": {
@@ -374,7 +385,7 @@
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
+                    "$ref": "#/definitions/responses.Outcome"
                 }
             }
         }

@@ -218,6 +218,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "responses.Outcome": {
+            "type": "string",
+            "enum": [
+                "VERIFIED",
+                "REJECTED"
+            ],
+            "x-enum-varnames": [
+                "OutcomeVerified",
+                "OutcomeRejected"
+            ]
+        },
         "responses.TokenResponse": {
             "type": "object",
             "properties": {
@@ -381,7 +392,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
+                    "$ref": "#/definitions/responses.Outcome"
                 }
             }
         }

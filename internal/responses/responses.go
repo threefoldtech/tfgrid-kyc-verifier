@@ -31,10 +31,10 @@ type TokenResponse struct {
 }
 
 type VerificationStatusResponse struct {
-	Final     bool   `json:"final"`
-	IdenfyRef string `json:"idenfyRef"`
-	ClientID  string `json:"clientId"`
-	Status    string `json:"status"`
+	Final     bool    `json:"final"`
+	IdenfyRef string  `json:"idenfyRef"`
+	ClientID  string  `json:"clientId"`
+	Status    Outcome `json:"status"`
 }
 
 type VerificationDataResponse struct {
@@ -96,7 +96,19 @@ func NewTokenResponseWithStatus(token *models.Token, isNewToken bool) *TokenResp
 	}
 }
 
+// Outcome enum can be VERIFIED or REJECTED
+type Outcome string
+
+const (
+	OutcomeVerified Outcome = "VERIFIED"
+	OutcomeRejected Outcome = "REJECTED"
+)
+
 func NewVerificationStatusResponse(verificationOutcome *models.VerificationOutcome) *VerificationStatusResponse {
+	outcome := OutcomeVerified
+	if verificationOutcome.Outcome == "REJECTED" {
+		outcome = OutcomeRejected
+	}
 	return &VerificationStatusResponse{
 		/* 		FraudTags:      verification.Status.FraudTags,
 		   		MismatchTags:   verification.Status.MismatchTags,
@@ -107,7 +119,7 @@ func NewVerificationStatusResponse(verificationOutcome *models.VerificationOutco
 		Final:     verificationOutcome.Final,
 		IdenfyRef: verificationOutcome.IdenfyRef,
 		ClientID:  verificationOutcome.ClientID,
-		Status:    verificationOutcome.Outcome,
+		Status:    outcome,
 	}
 }
 

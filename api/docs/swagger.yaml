@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  responses.Outcome:
+    enum:
+    - VERIFIED
+    - REJECTED
+    type: string
+    x-enum-varnames:
+    - OutcomeVerified
+    - OutcomeRejected
   responses.TokenResponse:
     properties:
       authToken:
@@ -109,7 +117,7 @@ definitions:
       idenfyRef:
         type: string
       status:
-        type: string
+        $ref: '#/definitions/responses.Outcome'
     type: object
 info:
   contact:
