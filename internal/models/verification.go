@@ -8,7 +8,7 @@ import (
 
 type Verification struct {
 	ID                    primitive.ObjectID `bson:"_id,omitempty"`
-	Final                 *bool              `bson:"final"`
+	Final                 bool               `bson:"final"`
 	Platform              string             `bson:"platform"`
 	Status                Status             `bson:"status"`
 	Data                  PersonData         `bson:"data"`
@@ -173,4 +173,11 @@ type AMLData struct {
 	IsPerson    *bool    `bson:"isPerson"`
 	IsActive    *bool    `bson:"isActive"`
 	CheckDate   string   `bson:"checkDate"`
+}
+
+type VerificationOutcome struct {
+	Final     bool   `bson:"final"`
+	ClientID  string `bson:"clientId"`
+	IdenfyRef string `bson:"idenfyRef"`
+	Outcome   string `bson:"outcome"`
 }

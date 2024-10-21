@@ -371,34 +371,13 @@ const docTemplate = `{
         "responses.VerificationStatusResponse": {
             "type": "object",
             "properties": {
-                "autoDocument": {
-                    "type": "string"
-                },
-                "autoFace": {
-                    "type": "string"
-                },
                 "clientId": {
                     "type": "string"
                 },
-                "fraudTags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "final": {
+                    "type": "boolean"
                 },
-                "manualDocument": {
-                    "type": "string"
-                },
-                "manualFace": {
-                    "type": "string"
-                },
-                "mismatchTags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "scanRef": {
+                "idenfyRef": {
                     "type": "string"
                 },
                 "status": {

@@ -8,6 +8,7 @@ import (
 	"example.com/tfgrid-kyc-service/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoVerificationRepository struct {
@@ -31,7 +32,9 @@ func (r *MongoVerificationRepository) SaveVerification(ctx context.Context, veri
 
 func (r *MongoVerificationRepository) GetVerification(ctx context.Context, clientID string) (*models.Verification, error) {
 	var verification models.Verification
-	err := r.collection.FindOne(ctx, bson.M{"clientId": clientID}).Decode(&verification)
+	// return the latest verification
+	opts := options.FindOne().SetSort(bson.D{{"createdAt", -1}})
+	err := r.collection.FindOne(ctx, bson.M{"clientId": clientID}, opts).Decode(&verification)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -39,9 +42,4 @@ func (r *MongoVerificationRepository) GetVerification(ctx context.Context, clien
 		return nil, err
 	}
 	return &verification, nil
-}
-
-func (r *MongoVerificationRepository) DeleteVerification(ctx context.Context, clientID string) error {
-	_, err := r.collection.DeleteOne(ctx, bson.M{"clientId": clientID})
-	return err
 }

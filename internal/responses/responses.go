@@ -31,15 +31,10 @@ type TokenResponse struct {
 }
 
 type VerificationStatusResponse struct {
-	FraudTags      []string `json:"fraudTags"`
-	MismatchTags   []string `json:"mismatchTags"`
-	AutoDocument   string   `json:"autoDocument"`
-	AutoFace       string   `json:"autoFace"`
-	ManualDocument string   `json:"manualDocument"`
-	ManualFace     string   `json:"manualFace"`
-	ScanRef        string   `json:"scanRef"`
-	ClientID       string   `json:"clientId"`
-	Status         string   `json:"status"`
+	Final     bool   `json:"final"`
+	IdenfyRef string `json:"idenfyRef"`
+	ClientID  string `json:"clientId"`
+	Status    string `json:"status"`
 }
 
 type VerificationDataResponse struct {
@@ -101,17 +96,18 @@ func NewTokenResponseWithStatus(token *models.Token, isNewToken bool) *TokenResp
 	}
 }
 
-func NewVerificationStatusResponse(verification *models.Verification) *VerificationStatusResponse {
+func NewVerificationStatusResponse(verificationOutcome *models.VerificationOutcome) *VerificationStatusResponse {
 	return &VerificationStatusResponse{
-		FraudTags:      verification.Status.FraudTags,
-		MismatchTags:   verification.Status.MismatchTags,
-		AutoDocument:   verification.Status.AutoDocument,
-		ManualDocument: verification.Status.ManualDocument,
-		AutoFace:       verification.Status.AutoFace,
-		ManualFace:     verification.Status.ManualFace,
-		ScanRef:        verification.ScanRef,
-		ClientID:       verification.ClientID,
-		Status:         string(verification.Status.Overall),
+		/* 		FraudTags:      verification.Status.FraudTags,
+		   		MismatchTags:   verification.Status.MismatchTags,
+		   		AutoDocument:   verification.Status.AutoDocument,
+		   		ManualDocument: verification.Status.ManualDocument,
+		   		AutoFace:       verification.Status.AutoFace,
+		   		ManualFace:     verification.Status.ManualFace, */
+		Final:     verificationOutcome.Final,
+		IdenfyRef: verificationOutcome.IdenfyRef,
+		ClientID:  verificationOutcome.ClientID,
+		Status:    verificationOutcome.Outcome,
 	}
 }
 

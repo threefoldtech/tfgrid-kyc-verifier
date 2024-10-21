@@ -87,7 +87,7 @@ func (h *Handler) GetVerificationData() fiber.Handler {
 func (h *Handler) GetVerificationStatus() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Get("X-Client-ID")
-		verification, err := h.verificationService.GetVerification(c.Context(), clientID)
+		verification, err := h.verificationService.GetVerificationStatus(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -108,7 +108,6 @@ func (h *Handler) GetVerificationStatus() fiber.Handler {
 // @Router			/webhooks/idenfy/verification-update [post]
 func (h *Handler) ProcessVerificationResult() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// print request body and headers and return 200
 		fmt.Printf("%+v", c.Body())
 		fmt.Printf("%+v", &c.Request().Header)
 		sigHeader := c.Get("Idenfy-Signature")
@@ -116,7 +115,6 @@ func (h *Handler) ProcessVerificationResult() fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "No signature provided"})
 		}
 		body := c.Body()
-		// encode the body to json and save it to the database
 		var result models.Verification
 		decoder := json.NewDecoder(bytes.NewReader(body))
 		err := decoder.Decode(&result)

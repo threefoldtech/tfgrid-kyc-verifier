@@ -102,25 +102,11 @@ definitions:
     type: object
   responses.VerificationStatusResponse:
     properties:
-      autoDocument:
-        type: string
-      autoFace:
-        type: string
       clientId:
         type: string
-      fraudTags:
-        items:
-          type: string
-        type: array
-      manualDocument:
-        type: string
-      manualFace:
-        type: string
-      mismatchTags:
-        items:
-          type: string
-        type: array
-      scanRef:
+      final:
+        type: boolean
+      idenfyRef:
         type: string
       status:
         type: string

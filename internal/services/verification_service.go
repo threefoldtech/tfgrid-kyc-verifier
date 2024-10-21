@@ -28,6 +28,29 @@ func (s *verificationService) GetVerification(ctx context.Context, clientID stri
 	return verification, nil
 }
 
+func (s *verificationService) GetVerificationStatus(ctx context.Context, clientID string) (*models.VerificationOutcome, error) {
+	verification, err := s.GetVerification(ctx, clientID)
+	if err != nil {
+		return nil, err
+	}
+	var outcome string
+	if verification != nil {
+		if verification.Status.Overall == "APPROVED" || (s.config.SuspiciousVerificationOutcome == "APPROVED" && verification.Status.Overall == "SUSPECTED") {
+			outcome = "APPROVED"
+		} else {
+			outcome = "REJECTED"
+		}
+	} else {
+		return nil, nil
+	}
+	return &models.VerificationOutcome{
+		Final:     verification.Final,
+		ClientID:  clientID,
+		IdenfyRef: verification.ScanRef,
+		Outcome:   outcome,
+	}, nil
+}
+
 func (s *verificationService) ProcessVerificationResult(ctx context.Context, body []byte, sigHeader string, result models.Verification) error {
 	err := s.idenfy.VerifyCallbackSignature(ctx, body, sigHeader)
 	if err != nil {
@@ -48,7 +71,7 @@ func (s *verificationService) ProcessDocExpirationNotification(ctx context.Conte
 }
 
 func (s *verificationService) IsUserVerified(ctx context.Context, clientID string) (bool, error) {
-	verification, err := s.GetVerification(ctx, clientID)
+	verification, err := s.repo.GetVerification(ctx, clientID)
 	if err != nil {
 		return false, err
 	}

@@ -15,5 +15,4 @@ type TokenRepository interface {
 type VerificationRepository interface {
 	SaveVerification(ctx context.Context, verification *models.Verification) error
 	GetVerification(ctx context.Context, clientID string) (*models.Verification, error)
-	DeleteVerification(ctx context.Context, clientID string) error
 }
