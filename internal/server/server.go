@@ -98,7 +98,7 @@ func New(config *configs.Config) *Server {
 	if err != nil {
 		log.Fatalf("Failed to initialize substrate client: %v", err)
 	}
-	kycService := services.NewKYCService(verificationRepo, tokenRepo, idenfyClient, substrateClient, config.MinBalanceToVerifyAccount, &config.Verification)
+	kycService := services.NewKYCService(verificationRepo, tokenRepo, idenfyClient, substrateClient, &config.Verification)
 
 	// Initialize handler
 	handler := handlers.NewHandler(kycService)

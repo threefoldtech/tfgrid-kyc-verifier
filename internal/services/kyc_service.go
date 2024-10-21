@@ -17,12 +17,11 @@ type kycService struct {
 	tokenRepo        repository.TokenRepository
 	idenfy           *idenfy.Idenfy
 	substrate        *substrate.Substrate
-	requiredBalance  uint64
 	config           *configs.VerificationConfig
 }
 
-func NewKYCService(verificationRepo repository.VerificationRepository, tokenRepo repository.TokenRepository, idenfy *idenfy.Idenfy, substrateClient *substrate.Substrate, requiredBalance uint64, config *configs.VerificationConfig) KYCService {
-	return &kycService{verificationRepo: verificationRepo, tokenRepo: tokenRepo, idenfy: idenfy, substrate: substrateClient, requiredBalance: requiredBalance, config: config}
+func NewKYCService(verificationRepo repository.VerificationRepository, tokenRepo repository.TokenRepository, idenfy *idenfy.Idenfy, substrateClient *substrate.Substrate, config *configs.VerificationConfig) KYCService {
+	return &kycService{verificationRepo: verificationRepo, tokenRepo: tokenRepo, idenfy: idenfy, substrate: substrateClient, config: config}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -72,14 +71,14 @@ func (s *kycService) DeleteToken(ctx context.Context, clientID string, scanRef s
 }
 
 func (s *kycService) AccountHasRequiredBalance(ctx context.Context, address string) (bool, error) {
-	if s.requiredBalance == 0 {
+	if s.config.MinBalanceToVerifyAccount == 0 {
 		return true, nil
 	}
 	balance, err := s.substrate.GetAccountBalance(address)
 	if err != nil {
 		return false, err
 	}
-	return balance >= s.requiredBalance, nil
+	return balance >= s.config.MinBalanceToVerifyAccount, nil
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

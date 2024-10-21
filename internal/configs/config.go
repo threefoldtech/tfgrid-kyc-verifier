@@ -22,8 +22,7 @@ type Config struct {
 	// Verification
 	Verification VerificationConfig `mapstructure:"verification"`
 	// Other
-	ChallengeWindow           int64  `mapstructure:"challenge_window"`
-	MinBalanceToVerifyAccount uint64 `mapstructure:"min_balance_to_verify_account"`
+	ChallengeWindow int64 `mapstructure:"challenge_window"`
 }
 
 type IdenfyConfig struct {
@@ -41,6 +40,7 @@ type TFChainConfig struct {
 type VerificationConfig struct {
 	SuspiciousVerificationOutcome string `mapstructure:"suspicious_verification_outcome"`
 	ExpiredDocumentOutcome        string `mapstructure:"expired_document_outcome"`
+	MinBalanceToVerifyAccount     uint64 `mapstructure:"min_balance_to_verify_account"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -100,7 +100,7 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}
-	err = viper.BindEnv("min_balance_to_verify_account")
+	err = viper.BindEnv("verification.min_balance_to_verify_account")
 	if err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}
