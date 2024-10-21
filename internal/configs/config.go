@@ -18,7 +18,9 @@ type Config struct {
 	// TFChain
 	TFChain TFChainConfig `mapstructure:"tfchain"`
 	// IP limiter
-	MaxTokenRequestsPerMinute int `mapstructure:"max_token_requests_per_minute"`
+	IPLimiter LimiterConfig `mapstructure:"ip_limiter"`
+	// Client limiter
+	IDLimiter LimiterConfig `mapstructure:"id_limiter"`
 	// Verification
 	Verification VerificationConfig `mapstructure:"verification"`
 	// Other
@@ -41,6 +43,11 @@ type VerificationConfig struct {
 	SuspiciousVerificationOutcome string `mapstructure:"suspicious_verification_outcome"`
 	ExpiredDocumentOutcome        string `mapstructure:"expired_document_outcome"`
 	MinBalanceToVerifyAccount     uint64 `mapstructure:"min_balance_to_verify_account"`
+}
+
+type LimiterConfig struct {
+	MaxTokenRequests int `mapstructure:"max_token_requests"`
+	TokenExpiration  int `mapstructure:"token_expiration"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -84,10 +91,6 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}
-	err = viper.BindEnv("max_token_requests_per_minute")
-	if err != nil {
-		return nil, fmt.Errorf("error binding env variable: %w", err)
-	}
 	err = viper.BindEnv("suspicious_verification_outcome")
 	if err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
@@ -109,6 +112,22 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}
 	err = viper.BindEnv("verification.expired_document_outcome")
+	if err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+	err = viper.BindEnv("ip_limiter.max_token_requests")
+	if err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+	err = viper.BindEnv("ip_limiter.token_expiration")
+	if err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+	err = viper.BindEnv("id_limiter.max_token_requests")
+	if err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+	err = viper.BindEnv("id_limiter.token_expiration")
 	if err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}

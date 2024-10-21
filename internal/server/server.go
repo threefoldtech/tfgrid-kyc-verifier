@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -34,15 +35,15 @@ func New(config *configs.Config) *Server {
 	app := fiber.New()
 
 	// Setup Limter Config and store
-	/* ipLimiterstore := mongodb.New(mongodb.Config{
+	ipLimiterstore := mongodb.New(mongodb.Config{
 		ConnectionURI: config.MongoURI,
 		Database:      config.DatabaseName,
 		Collection:    "ip_limit",
 		Reset:         false,
-	}) */
-	/* ipLimiterConfig := limiter.Config{ // TODO: use configurable parameters, also check if it works well after passing the request through an SSL gateway
-		Max:                    5,
-		Expiration:             24 * time.Hour,
+	})
+	ipLimiterConfig := limiter.Config{ // TODO: use configurable parameters, also check if it works well after passing the request through an SSL gateway
+		Max:                    config.IPLimiter.MaxTokenRequests,
+		Expiration:             time.Duration(config.IPLimiter.TokenExpiration) * time.Hour,
 		SkipFailedRequests:     false,
 		SkipSuccessfulRequests: false,
 		Store:                  ipLimiterstore,
@@ -50,25 +51,28 @@ func New(config *configs.Config) *Server {
 		Next: func(c *fiber.Ctx) bool {
 			return c.IP() == "127.0.0.1"
 		},
-	} */
-	clientLimiterStore := mongodb.New(mongodb.Config{
+	}
+	idLimiterStore := mongodb.New(mongodb.Config{
 		ConnectionURI: config.MongoURI,
 		Database:      config.DatabaseName,
 		Collection:    "client_limit",
 		Reset:         false,
 	})
 
-	clientLimiterConfig := limiter.Config{ // TODO: use configurable parameters
-		Max:                    10,
-		Expiration:             24 * time.Hour,
+	idLimiterConfig := limiter.Config{ // TODO: use configurable parameters
+		Max:                    config.IDLimiter.MaxTokenRequests,
+		Expiration:             time.Duration(config.IDLimiter.TokenExpiration) * time.Hour,
 		SkipFailedRequests:     false,
 		SkipSuccessfulRequests: false,
-		Store:                  clientLimiterStore,
+		Store:                  idLimiterStore,
 		// Use client id as key to limit the number of requests per client
 		KeyGenerator: func(c *fiber.Ctx) string {
 			return c.Get("X-Client-ID")
 		},
 	}
+	// print limtters config
+	fmt.Printf("IP Limiter Config: %+v\n", ipLimiterConfig)
+	fmt.Printf("ID Limiter Config: %+v\n", idLimiterConfig)
 
 	// Global middlewares
 	app.Use(middleware.Logger())
@@ -106,8 +110,8 @@ func New(config *configs.Config) *Server {
 	// Routes
 	app.Get("/docs/*", swagger.HandlerDefault)
 
-	v1 := app.Group("/api/v1", middleware.AuthMiddleware(config.ChallengeWindow)) // TODO: add limiter.New(ipLimiterConfig)
-	v1.Post("/token", limiter.New(clientLimiterConfig), handler.GetorCreateVerificationToken())
+	v1 := app.Group("/api/v1", middleware.AuthMiddleware(config.ChallengeWindow))
+	v1.Post("/token", limiter.New(idLimiterConfig), limiter.New(ipLimiterConfig), handler.GetorCreateVerificationToken())
 	v1.Get("/data", handler.GetVerificationData())
 	v1.Get("/status", handler.GetVerificationStatus())
 
