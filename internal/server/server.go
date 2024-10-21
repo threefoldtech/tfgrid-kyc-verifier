@@ -45,7 +45,7 @@ func New(config *configs.Config) *Server {
 	})
 	ipLimiterConfig := limiter.Config{ // TODO: use configurable parameters, also check if it works well after passing the request through an SSL gateway
 		Max:                    config.IPLimiter.MaxTokenRequests,
-		Expiration:             time.Duration(config.IPLimiter.TokenExpiration) * time.Hour,
+		Expiration:             time.Duration(config.IPLimiter.TokenExpiration) * time.Minute,
 		SkipFailedRequests:     false,
 		SkipSuccessfulRequests: false,
 		Store:                  ipLimiterstore,
@@ -95,7 +95,7 @@ func New(config *configs.Config) *Server {
 
 	idLimiterConfig := limiter.Config{ // TODO: use configurable parameters
 		Max:                    config.IDLimiter.MaxTokenRequests,
-		Expiration:             time.Duration(config.IDLimiter.TokenExpiration) * time.Hour,
+		Expiration:             time.Duration(config.IDLimiter.TokenExpiration) * time.Minute,
 		SkipFailedRequests:     false,
 		SkipSuccessfulRequests: false,
 		Store:                  idLimiterStore,
