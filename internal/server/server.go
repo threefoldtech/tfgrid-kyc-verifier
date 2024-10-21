@@ -3,8 +3,10 @@ package server
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -51,11 +53,43 @@ func New(config *configs.Config) *Server {
 		Next: func(c *fiber.Ctx) bool {
 			return c.IP() == "127.0.0.1"
 		},
+		KeyGenerator: func(c *fiber.Ctx) string {
+			// Check for X-Forwarded-For header
+			if ip := c.Get("X-Forwarded-For"); ip != "" {
+				ips := strings.Split(ip, ",")
+				if len(ips) > 0 {
+					// return the first non-private ip in the list
+					for _, ip := range ips {
+						if net.ParseIP(strings.TrimSpace(ip)) != nil && !net.ParseIP(strings.TrimSpace(ip)).IsPrivate() {
+							return strings.TrimSpace(ip)
+						}
+					}
+				}
+			}
+
+			// Check for X-Real-IP header if not a private IP
+			if ip := c.Get("X-Real-IP"); ip != "" {
+				if net.ParseIP(strings.TrimSpace(ip)) != nil && !net.ParseIP(strings.TrimSpace(ip)).IsPrivate() {
+					return strings.TrimSpace(ip)
+				}
+			}
+
+			// Fall back to RemoteIP() if no proxy headers are present
+			ip := c.IP()
+			if parsedIP := net.ParseIP(ip); parsedIP != nil {
+				if !parsedIP.IsPrivate() {
+					return ip
+				}
+			}
+
+			// If we still have a private IP, return a default value that will be skipped by the limiter
+			return "127.0.0.1"
+		},
 	}
 	idLimiterStore := mongodb.New(mongodb.Config{
 		ConnectionURI: config.MongoURI,
 		Database:      config.DatabaseName,
-		Collection:    "client_limit",
+		Collection:    "id_limit",
 		Reset:         false,
 	})
 
