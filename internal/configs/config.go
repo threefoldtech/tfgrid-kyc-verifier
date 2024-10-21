@@ -33,6 +33,7 @@ type IdenfyConfig struct {
 	BaseURL         string   `mapstructure:"base_url"`
 	CallbackSignKey string   `mapstructure:"callback_sign_key"`
 	WhitelistedIPs  []string `mapstructure:"whitelisted_ips,omitempty"`
+	DevMode         bool     `mapstructure:"dev_mode"`
 }
 
 type TFChainConfig struct {
@@ -128,6 +129,10 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}
 	err = viper.BindEnv("id_limiter.token_expiration")
+	if err != nil {
+		return nil, fmt.Errorf("error binding env variable: %w", err)
+	}
+	err = viper.BindEnv("idenfy.dev_mode")
 	if err != nil {
 		return nil, fmt.Errorf("error binding env variable: %w", err)
 	}

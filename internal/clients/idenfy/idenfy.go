@@ -21,6 +21,7 @@ type Idenfy struct {
 	secretKey       string
 	baseURL         string
 	callbackSignKey []byte
+	devMode         bool
 }
 
 const (
@@ -34,6 +35,7 @@ func New(config configs.IdenfyConfig) *Idenfy {
 		accessKey:       config.APIKey,
 		secretKey:       config.APISecret,
 		callbackSignKey: []byte(config.CallbackSignKey),
+		devMode:         config.DevMode,
 	}
 }
 
@@ -52,12 +54,9 @@ func (c *Idenfy) CreateVerificationSession(ctx context.Context, clientID string)
 	auth := base64.StdEncoding.EncodeToString([]byte(authStr))
 	req.Header.Set("Authorization", "Basic "+auth)
 
-	jsonBody, err := json.Marshal(map[string]interface{}{
-		"clientId":            clientID,
-		"generateDigitString": true,
-		"expiryTime":          30,
-		"dummyStatus":         "APPROVED", // TODO: remove this after testing
-	})
+	RequestBody := c.createVerificationSessionRequestBody(clientID, c.devMode)
+
+	jsonBody, err := json.Marshal(RequestBody)
 	if err != nil {
 		return models.Token{}, fmt.Errorf("error marshaling request body: %w", err)
 	}
@@ -106,4 +105,17 @@ func (c *Idenfy) VerifyCallbackSignature(ctx context.Context, body []byte, sigHe
 	fmt.Println("signature verified")
 
 	return nil
+}
+
+// function to create a request body for the verification session
+func (c *Idenfy) createVerificationSessionRequestBody(clientID string, devMode bool) map[string]interface{} {
+	RequestBody := map[string]interface{}{
+		"clientId":            clientID,
+		"generateDigitString": true,
+	}
+	if devMode {
+		RequestBody["expiryTime"] = 30
+		RequestBody["dummyStatus"] = "APPROVED"
+	}
+	return RequestBody
 }
