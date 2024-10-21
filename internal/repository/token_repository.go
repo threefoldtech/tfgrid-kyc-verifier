@@ -71,7 +71,10 @@ func (r *MongoTokenRepository) GetToken(ctx context.Context, clientID string) (*
 	return &token, nil
 }
 
-func (r *MongoTokenRepository) DeleteToken(ctx context.Context, clientID string) error {
-	_, err := r.collection.DeleteOne(ctx, bson.M{"clientId": clientID})
+func (r *MongoTokenRepository) DeleteToken(ctx context.Context, clientID string, scanRef string) error {
+	res, err := r.collection.DeleteOne(ctx, bson.M{"clientId": clientID, "scanRef": scanRef})
+	if err == nil {
+		fmt.Println("token deletion succeeded. deleted count: ", res.DeletedCount)
+	}
 	return err
 }

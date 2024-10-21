@@ -9,7 +9,7 @@ import (
 type TokenRepository interface {
 	SaveToken(ctx context.Context, token *models.Token) error
 	GetToken(ctx context.Context, clientID string) (*models.Token, error)
-	DeleteToken(ctx context.Context, clientID string) error
+	DeleteToken(ctx context.Context, clientID string, scanRef string) error
 }
 
 type VerificationRepository interface {

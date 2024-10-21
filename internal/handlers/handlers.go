@@ -13,13 +13,11 @@ import (
 )
 
 type Handler struct {
-	tokenService        services.TokenService
-	verificationService services.VerificationService
-	coordinatorService  services.CoordinatorService
+	kycService services.KYCService
 }
 
-func NewHandler(tokenService services.TokenService, verificationService services.VerificationService, coordinatorService services.CoordinatorService) *Handler {
-	return &Handler{tokenService: tokenService, verificationService: verificationService, coordinatorService: coordinatorService}
+func NewHandler(kycService services.KYCService) *Handler {
+	return &Handler{kycService: kycService}
 }
 
 // @Summary		Get or Generate iDenfy Verification Token
@@ -37,7 +35,7 @@ func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Get("X-Client-ID")
 
-		token, isNewToken, err := h.coordinatorService.GetorCreateVerificationToken(c.Context(), clientID)
+		token, isNewToken, err := h.kycService.GetorCreateVerificationToken(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -62,7 +60,7 @@ func (h *Handler) GetorCreateVerificationToken() fiber.Handler {
 func (h *Handler) GetVerificationData() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Get("X-Client-ID")
-		verification, err := h.verificationService.GetVerification(c.Context(), clientID)
+		verification, err := h.kycService.GetVerification(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -87,7 +85,7 @@ func (h *Handler) GetVerificationData() fiber.Handler {
 func (h *Handler) GetVerificationStatus() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		clientID := c.Get("X-Client-ID")
-		verification, err := h.verificationService.GetVerificationStatus(c.Context(), clientID)
+		verification, err := h.kycService.GetVerificationStatus(c.Context(), clientID)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -123,7 +121,7 @@ func (h *Handler) ProcessVerificationResult() fiber.Handler {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		}
 		fmt.Printf("after decoding: %+v", result)
-		err = h.verificationService.ProcessVerificationResult(c.Context(), body, sigHeader, result)
+		err = h.kycService.ProcessVerificationResult(c.Context(), body, sigHeader, result)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}

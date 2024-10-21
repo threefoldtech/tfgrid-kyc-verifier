@@ -98,12 +98,10 @@ func New(config *configs.Config) *Server {
 	if err != nil {
 		log.Fatalf("Failed to initialize substrate client: %v", err)
 	}
-	tokenService := services.NewTokenService(tokenRepo, idenfyClient, substrateClient, config.MinBalanceToVerifyAccount)
-	verificationService := services.NewVerificationService(verificationRepo, idenfyClient, &config.Verification)
-	coordinatorService := services.NewCoordinatorService(tokenService, verificationService)
+	kycService := services.NewKYCService(verificationRepo, tokenRepo, idenfyClient, substrateClient, config.MinBalanceToVerifyAccount, &config.Verification)
 
 	// Initialize handler
-	handler := handlers.NewHandler(tokenService, verificationService, coordinatorService)
+	handler := handlers.NewHandler(kycService)
 
 	// Routes
 	app.Get("/docs/*", swagger.HandlerDefault)
